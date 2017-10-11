@@ -24,7 +24,7 @@ def main():
     
     rospy.sleep(1)
     
-    constant_vel = True
+    constant_vel = False
     if constant_vel:
         thread = threading.Thread(target = constant_vel_loop)
     else:
@@ -40,8 +40,8 @@ def constant_vel_loop():
     
     while not rospy.is_shutdown() :
         wcv = WheelCmdVel()
-        wcv.desiredWV_R = 0.1
-        wcv.desiredWV_L = 0.2
+        wcv.desiredWV_R = 60
+        wcv.desiredWV_L = -60
         
         velcmd_pub.publish(wcv) 
         
@@ -54,7 +54,6 @@ def apriltag_callback(data):
     	detection = data.detections[0]
     	print detection.pose 
     	if detection.id == 20:   # tag id is the correct one
-    		print 'detection' 
 		poselist_tag_cam = pose2poselist(detection.pose.pose)
         	poselist_tag_base = transformPose(lr, poselist_tag_cam, sourceFrame = 'camera', targetFrame = 'base_link')
 
@@ -67,7 +66,7 @@ def apriltag_callback(data):
 ## navigation control loop (No need to modify)
 def navi_loop():
     velcmd_pub = rospy.Publisher("/cmdvel", WheelCmdVel, queue_size = 1)
-    target_pose2d = [0.25, 0, np.pi]
+    target_pose2d = [1, 0, np.pi]
     rate = rospy.Rate(100) # 100hz
     
     wcv = WheelCmdVel()
@@ -103,9 +102,9 @@ def navi_loop():
         robot_heading_vec = np.array([np.cos(robot_yaw), np.sin(robot_yaw)])
         heading_err_cross = cross2d( robot_heading_vec, pos_delta / np.linalg.norm(pos_delta) )
         
-        # print 'robot_position2d', robot_position2d, 'target_position2d', target_position2d
-        # print 'pos_delta', pos_delta
-        # print 'robot_yaw', robot_yaw
+        print 'robot_position2d', robot_position2d, 'target_position2d', target_position2d
+        print 'pos_delta', pos_delta
+        print 'robot_yaw', robot_yaw
         # print 'norm delta', np.linalg.norm( pos_delta ), 'diffrad', diffrad(robot_yaw, target_pose2d[2])
         # print 'heading_err_cross', heading_err_cross
         
@@ -118,26 +117,26 @@ def navi_loop():
             arrived_position = True
             if diffrad(robot_yaw, target_pose2d[2]) > 0:
                 print 'Case 2.2.1  Turn right slowly'      
-                wcv.desiredWV_R = -0.05 
-                wcv.desiredWV_L = 0.05
+                wcv.desiredWV_R = -30 
+                wcv.desiredWV_L = 30
             else:
                 print 'Case 2.2.2  Turn left slowly'
-                wcv.desiredWV_R = 0.05  
-                wcv.desiredWV_L = -0.05
+                wcv.desiredWV_R = 30  
+                wcv.desiredWV_L = -30
                 
         elif arrived_position or np.fabs( heading_err_cross ) < 0.2:
             print 'Case 2.3  Straight forward'  
-            wcv.desiredWV_R = 0.1
-            wcv.desiredWV_L = 0.1
+            wcv.desiredWV_R = 50
+            wcv.desiredWV_L = 50
         else:
             if heading_err_cross < 0:
                 print 'Case 2.4.1  Turn right'
-                wcv.desiredWV_R = -0.1
-                wcv.desiredWV_L = 0.1
+                wcv.desiredWV_R = -50
+                wcv.desiredWV_L = 50
             else:
                 print 'Case 2.4.2  Turn left'
-                wcv.desiredWV_R = 0.1
-                wcv.desiredWV_L = -0.1
+                wcv.desiredWV_R = 50
+                wcv.desiredWV_L = -50
                 
         velcmd_pub.publish(wcv)  
         
