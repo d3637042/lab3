@@ -4,7 +4,7 @@
 <link name="robot_base">
     <visual>
         <geometry>
-            <mesh filename="package://me212bot/model/meshes/visual/me212bot.stl"/>
+            <mesh scale="0.001 0.001 0.001" filename="package://me212bot/model/meshes/visual/me212bot.stl"/>
         </geometry>
         <material name="blue">
             <color rgba="0.8 0.8 .8 1"/>

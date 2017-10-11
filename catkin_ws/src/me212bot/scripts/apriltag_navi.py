@@ -53,15 +53,15 @@ def apriltag_callback(data):
     if len(data.detections)!=0:
     	detection = data.detections[0]
     	print detection.pose 
-    	if detection.id == 21:   # tag id is the correct one
+    	if detection.id == 20:   # tag id is the correct one
     		print 'detection' 
 		poselist_tag_cam = pose2poselist(detection.pose.pose)
-        	poselist_tag_base = transformPose(lr, poselist_tag_cam, sourceFrame = 'camera', targetFrame = 'robot_base')
+        	poselist_tag_base = transformPose(lr, poselist_tag_cam, sourceFrame = 'camera', targetFrame = 'base_link')
 
         	print poselist_tag_base
 		poselist_base_tag = invPoselist(poselist_tag_base)
         	poselist_base_map = transformPose(lr, poselist_base_tag, sourceFrame = 'apriltag', targetFrame = 'map')
-        	pubFrame(br, pose = poselist_base_map, frame_id = '/robot_base', parent_frame_id = '/map')
+        	pubFrame(br, pose = poselist_base_map, frame_id = '/base_link', parent_frame_id = '/map')
 
 
 ## navigation control loop (No need to modify)
@@ -77,7 +77,7 @@ def navi_loop():
     
     while not rospy.is_shutdown() :
         # 1. get robot pose
-        robot_pose3d = lookupTransform(lr, '/map', '/robot_base')
+        robot_pose3d = lookupTransform(lr, '/map', '/base_link')
         
         if robot_pose3d is None:
             print '1. Tag not in view, Stop'
